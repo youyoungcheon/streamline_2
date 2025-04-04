@@ -1,3 +1,5 @@
+#고친거
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,7 +11,8 @@ st.set_page_config(page_title="Sunspot Data Analysis", layout="wide")
 st.title("🌞 Sunspot Data Advanced Analysis & Visualization")
 
 # 데이터 로드
-df = pd.read_csv("/sunspots_for_prophet.csv")
+df = pd.read_csv("./sunspots.csv")
+df['y'] = df['SUNACTIVITY']
 df["YEAR"] = df["YEAR"].astype(int)
 df["date"] = pd.to_datetime(df["YEAR"], format="%Y")
 df = df.set_index("date")
