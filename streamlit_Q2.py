@@ -3,20 +3,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import skew, kurtosis, gaussian_kde
-import statsmodels.api as sm
 
 # 페이지 설정
 st.set_page_config(page_title="Sunspot Data Analysis", layout="wide")
 st.title("🌞 Sunspot Data Advanced Analysis & Visualization")
 
 # 데이터 로드
-sunspots = sm.datasets.sunspots.load_pandas()
-df = sunspots.data
+df = pd.read_csv("./sunspots_for_prophet.csv")
 df["YEAR"] = df["YEAR"].astype(int)
 df["date"] = pd.to_datetime(df["YEAR"], format="%Y")
 df = df.set_index("date")
 df = df.sort_index()
-sunactivity = df["SUNACTIVITY"].dropna()
+sunactivity = df["y"].dropna()
 
 # -------------------------------------------------------
 # 1. 기본 통계 요약 및 분포 분석
@@ -61,9 +59,9 @@ upper_bound = Q3 + 1.5 * IQR
 st.write(f"**하한 (Lower bound)**: {lower_bound:.2f}")
 st.write(f"**상한 (Upper bound)**: {upper_bound:.2f}")
 
-outliers = df[(df["SUNACTIVITY"] < lower_bound) | (df["SUNACTIVITY"] > upper_bound)]
+outliers = df[(df["y"] < lower_bound) | (df["y"] > upper_bound)]
 st.markdown("**탐지된 이상치 (연도와 값):**")
-st.dataframe(outliers[["YEAR", "SUNACTIVITY"]])
+st.dataframe(outliers[["YEAR", "y"]])
 
 # -------------------------------------------------------
 # 3. 심화 시각화: 다중 서브플롯
@@ -74,7 +72,7 @@ fig2, axs = plt.subplots(2, 2, figsize=(16, 12))
 fig2.suptitle("Sunspots Data Advanced Visualization", fontsize=20)
 
 # (a) 라인 차트
-axs[0, 0].plot(df.index, df["SUNACTIVITY"], color='blue')
+axs[0, 0].plot(df.index, df["y"], color='blue')
 axs[0, 0].set_title("Sunspot Activity Over Time")
 axs[0, 0].set_xlabel("Year")
 axs[0, 0].set_ylabel("SUNACTIVITY")
@@ -92,7 +90,7 @@ axs[0, 1].grid(True)
 # (c) 1900-2000년 박스플롯
 df_20th = df["1900":"2000"]
 if not df_20th.empty:
-    axs[1, 0].boxplot(df_20th["SUNACTIVITY"], vert=False)
+    axs[1, 0].boxplot(df_20th["y"], vert=False)
     axs[1, 0].set_title("Boxplot (1900-2000)")
     axs[1, 0].set_xlabel("SUNACTIVITY")
 else:
@@ -101,7 +99,7 @@ else:
 
 # (d) 산점도 + 회귀선
 years = df["YEAR"]
-sunvals = df["SUNACTIVITY"]
+sunvals = df["y"]
 axs[1, 1].scatter(years, sunvals, s=10, alpha=0.5, label='Data Points')
 trend_coef = np.polyfit(years, sunvals, 1)
 trend = np.poly1d(trend_coef)
